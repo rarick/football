@@ -77,7 +77,7 @@ class PartyObservationWrapper(gym.ObservationWrapper):
                        will depend on number of players in team1).
 
     Returns:
-      (N, 1139) shaped representation, where N stands for the number of players
+      (N, 897) shaped representation, where N stands for the number of players
       being controlled.
       *   22 - (x,y) coordinates of left team players
       *   22 - (x,y) direction of left team players
@@ -97,7 +97,6 @@ class PartyObservationWrapper(gym.ObservationWrapper):
       *   242 - (x,y) relative position between teamates left
       *   242 - (x,y) relative position between opponents left
       *   242 - (x,y) relative position between teamates right
-      *   242 - (x,y) relative position between opponents right
     """
 
     final_obs = []
@@ -162,21 +161,24 @@ class PartyObservationWrapper(gym.ObservationWrapper):
         rel_position = active_player_pose - ball_pose
         o.extend(rel_position)
 
-      
+      rel_pos_left_left = PartyObservationWrapper.create_rel_pose(obs['left_team'],
+                                                                  obs['left_team_active'], 
+                                                                  obs['left_team'], 
+                                                                  obs['left_team_active']) 
 
-      rel_pos_teamates_left = PartyObservationWrapper.create_rel_pose(obs['right_team'], obs['left_team_active'], obs['left_team'], obs['left_team_active'])
-      rel_pos_teamates_right = PartyObservationWrapper.create_rel_pose(obs['right_team'], obs['right_team_active'], obs['right_team'], obs['right_team_active'])
+      rel_pos_left_right = PartyObservationWrapper.create_rel_pose(obs['left_team'], 
+                                                                   obs['left_team_active'], 
+                                                                   obs['right_team'], 
+                                                                   obs['right_team_active']) 
 
-      o.extend(PartyObservationWrapper.do_flatten(rel_pos_teamates_left))
-      o.extend(PartyObservationWrapper.do_flatten(rel_pos_teamates_right))
+      rel_pos_right_right = PartyObservationWrapper.create_rel_pose(obs['right_team'], 
+                                                                    obs['right_team_active'], 
+                                                                    obs['right_team'], 
+                                                                    obs['right_team_active'])
 
-      rel_pos_opponents_left = PartyObservationWrapper.create_rel_pose(obs['left_team'], obs['left_team_active'], obs['right_team'], obs['right_team_active'])
-      rel_pos_opponents_right = PartyObservationWrapper.create_rel_pose(obs['right_team'], obs['right_team_active'], obs['left_team'], obs['left_team_active'])
-
-
-      o.extend(PartyObservationWrapper.do_flatten(rel_pos_opponents_left)) 
-      o.extend(PartyObservationWrapper.do_flatten(rel_pos_opponents_right)) 
-
+      o.extend(PartyObservationWrapper.do_flatten(rel_pos_left_left))
+      o.extend(PartyObservationWrapper.do_flatten(rel_pos_left_right))
+      o.extend(PartyObservationWrapper.do_flatten(rel_pos_right_right)) 
 
       sticky = obs['sticky_actions']
       o.extend(sticky)
