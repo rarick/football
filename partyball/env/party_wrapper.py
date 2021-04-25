@@ -15,14 +15,6 @@
 
 """Environment that can be used with OpenAI Baselines."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import collections
-import cv2
-from gfootball.env import football_action_set
-from gfootball.env import observation_preprocessing
 import gym
 import numpy as np
 
@@ -47,7 +39,27 @@ class PartyObservationWrapper(gym.ObservationWrapper):
 
   def observation(self, observation):
     """Converts an observation into simple115 (or simple115v2) format."""
-    return OurObservationWrapper.convert_observation(observation, self._fixed_positions)
+    return PartyObservationWrapper.convert_observation(observation, self._fixed_positions)
+
+  @staticmethod  
+  def create_rel_pose(ref_pos_array, ref_active, rel_pos_array, rel_active):
+      rel_pose_array = []
+      for i in range(11):
+        for j in range(11):
+          rel_pos = None 
+          if not ref_active[i] or not rel_active[j]:
+            rel_pos = np.zeros(2)  # Not sure how to encode this
+          else:
+            rel_pos = np.array(ref_pos_array[i]) - np.array(rel_pos_array[j])
+          rel_pose_array.append(rel_pos)
+      return rel_pose_array 
+
+  @staticmethod
+  def do_flatten(obj):
+      """Run flatten on either python list or numpy array."""
+      if type(obj) == list:
+        return np.array(obj).flatten()
+      return obj.flatten()
 
   @staticmethod
   def convert_observation(observation, fixed_positions):
@@ -65,7 +77,7 @@ class PartyObservationWrapper(gym.ObservationWrapper):
                        will depend on number of players in team1).
 
     Returns:
-      (N, 655) shaped representation, where N stands for the number of players
+      (N, 1139) shaped representation, where N stands for the number of players
       being controlled.
       *   22 - (x,y) coordinates of left team players
       *   22 - (x,y) direction of left team players
@@ -82,15 +94,11 @@ class PartyObservationWrapper(gym.ObservationWrapper):
       *   11 - ntired factor for each player of the right team
       *   2 - relative pose between active player and ball
       *   10 - vector 1 or 0 dependung on which action is active
-      *   242 - (x,y) relative position between teamates
-      *   242 - (x,y) relative position between opponents
+      *   242 - (x,y) relative position between teamates left
+      *   242 - (x,y) relative position between opponents left
+      *   242 - (x,y) relative position between teamates right
+      *   242 - (x,y) relative position between opponents right
     """
-
-    def do_flatten(obj):
-      """Run flatten on either python list or numpy array."""
-      if type(obj) == list:
-        return np.array(obj).flatten()
-      return obj.flatten()
 
     final_obs = []
     for obs in observation:
@@ -98,16 +106,16 @@ class PartyObservationWrapper(gym.ObservationWrapper):
       if fixed_positions:
         for i, name in enumerate(['left_team', 'left_team_direction',
                                   'right_team', 'right_team_direction']):
-          o.extend(do_flatten(obs[name]))
+          o.extend(PartyObservationWrapper.do_flatten(obs[name]))
           # If there were less than 11vs11 players we backfill missing values
           # with -1.
           if len(o) < (i + 1) * 22:
             o.extend([-1] * ((i + 1) * 22 - len(o)))
       else:
-        o.extend(do_flatten(obs['left_team']))
-        o.extend(do_flatten(obs['left_team_direction']))
-        o.extend(do_flatten(obs['right_team']))
-        o.extend(do_flatten(obs['right_team_direction']))
+        o.extend(PartyObservationWrapper.do_flatten(obs['left_team']))
+        o.extend(PartyObservationWrapper.do_flatten(obs['left_team_direction']))
+        o.extend(PartyObservationWrapper.do_flatten(obs['right_team']))
+        o.extend(PartyObservationWrapper.do_flatten(obs['right_team_direction']))
 
       # If there were less than 11vs11 players we backfill missing values with
       # -1.
@@ -136,7 +144,6 @@ class PartyObservationWrapper(gym.ObservationWrapper):
       game_mode[obs['game_mode']] = 1
       o.extend(game_mode)
 
-
       yellow_cards_left = obs['left_team_yellow_card']
       o.extend(yellow_cards_left)
 
@@ -155,32 +162,21 @@ class PartyObservationWrapper(gym.ObservationWrapper):
         rel_position = active_player_pose - ball_pose
         o.extend(rel_position)
 
+      
 
-      rel_pos_teamates = []
-      for i in range(11):
-        for j in range(11):
-          rel_pos = None
-          if i == j: 
-            rel_pos = [0 , 0] # Not sure how to encode this 
-          elif not obs['left_team_active'][i] or not obs['left_team_active'][j]:
-            rel_pos = [0, 0] # Not sure how to encode this
-          else:
-            rel_pos = np.array(obs['left_team'][i]) - np.array(obs['left_team'][j])
-          rel_pos_teamates.append(rel_pos)
+      rel_pos_teamates_left = PartyObservationWrapper.create_rel_pose(obs['right_team'], obs['left_team_active'], obs['left_team'], obs['left_team_active'])
+      rel_pos_teamates_right = PartyObservationWrapper.create_rel_pose(obs['right_team'], obs['right_team_active'], obs['right_team'], obs['right_team_active'])
 
-      o.extend(do_flatten(rel_pos_teamates))
+      o.extend(PartyObservationWrapper.do_flatten(rel_pos_teamates_left))
+      o.extend(PartyObservationWrapper.do_flatten(rel_pos_teamates_right))
 
-      rel_pos_opponents = []
-      for i in range(11):
-        for j in range(11):
-          rel_pos = None
-          if not obs['left_team_active'][i] or not obs['right_team_active'][j]:
-            rel_pos = [0, 0] # Not sure how to encode this
-          else:
-            rel_pos = np.array(obs['left_team'][i]) - np.array(obs['right_team'][j])
-          rel_pos_opponents.append(rel_pos)
+      rel_pos_opponents_left = PartyObservationWrapper.create_rel_pose(obs['left_team'], obs['left_team_active'], obs['right_team'], obs['right_team_active'])
+      rel_pos_opponents_right = PartyObservationWrapper.create_rel_pose(obs['right_team'], obs['right_team_active'], obs['left_team'], obs['left_team_active'])
 
-      o.extend(do_flatten(rel_pos_opponents))      
+
+      o.extend(PartyObservationWrapper.do_flatten(rel_pos_opponents_left)) 
+      o.extend(PartyObservationWrapper.do_flatten(rel_pos_opponents_right)) 
+
 
       sticky = obs['sticky_actions']
       o.extend(sticky)
