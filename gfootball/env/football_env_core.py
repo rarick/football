@@ -150,7 +150,7 @@ class FootballEnvCore(object):
   def __del__(self):
     self.close()
 
-  def compute_reward(self):
+  def compute_reward(self, action):
     score_diff = self._observation['score'][0] - self._observation['score'][1]
     return score_diff - self._state.previous_score_diff
 
@@ -234,7 +234,7 @@ class FootballEnvCore(object):
       self._trace.write_dump('score')
     elif goal_diff == -1:
       self._trace.write_dump('lost_score')
-    reward = self.compute_reward()
+    reward = self.compute_reward(action)
     debug['reward'] = reward
     if self._observation['game_mode'] != int(
         libgame.e_GameMode.e_GameMode_Normal):
