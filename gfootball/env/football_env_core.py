@@ -150,7 +150,7 @@ class FootballEnvCore(object):
   def __del__(self):
     self.close()
 
-  def compute_reward(self,action):
+  def compute_reward(self, action):
     score_diff = self._observation['score'][0] - self._observation['score'][1]
     return score_diff - self._state.previous_score_diff
 
