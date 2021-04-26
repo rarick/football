@@ -1,6 +1,6 @@
 from gfootball.env.football_env import FootballEnvBase
 from gfootball.env.football_env_core import FootballEnvCore
-from party_env_core import PartyEnvCore
+from partyball.party_env_core import PartyEnvCore
 
 
 class PartyEnv(FootballEnvBase):

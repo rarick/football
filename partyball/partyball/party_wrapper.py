@@ -41,18 +41,18 @@ class PartyObservationWrapper(gym.ObservationWrapper):
     """Converts an observation into simple115 (or simple115v2) format."""
     return PartyObservationWrapper.convert_observation(observation, self._fixed_positions)
 
-  @staticmethod  
+  @staticmethod
   def create_rel_pose(ref_pos_array, ref_active, rel_pos_array, rel_active):
       rel_pose_array = []
       for i in range(11):
         for j in range(11):
-          rel_pos = None 
+          rel_pos = None
           if not ref_active[i] or not rel_active[j]:
             rel_pos = np.zeros(2)  # Not sure how to encode this
           else:
             rel_pos = np.array(ref_pos_array[i]) - np.array(rel_pos_array[j])
           rel_pose_array.append(rel_pos)
-      return rel_pose_array 
+      return rel_pose_array
 
   @staticmethod
   def do_flatten(obj):
@@ -161,24 +161,21 @@ class PartyObservationWrapper(gym.ObservationWrapper):
         rel_position = active_player_pose - ball_pose
         o.extend(rel_position)
 
-      rel_pos_left_left = PartyObservationWrapper.create_rel_pose(obs['left_team'],
-                                                                  obs['left_team_active'], 
-                                                                  obs['left_team'], 
-                                                                  obs['left_team_active']) 
+      rel_pos_left_left = PartyObservationWrapper.create_rel_pose(
+              obs['left_team'], obs['left_team_active'],
+              obs['left_team'], obs['left_team_active'])
 
-      rel_pos_left_right = PartyObservationWrapper.create_rel_pose(obs['left_team'], 
-                                                                   obs['left_team_active'], 
-                                                                   obs['right_team'], 
-                                                                   obs['right_team_active']) 
+      rel_pos_left_right = PartyObservationWrapper.create_rel_pose(
+              obs['left_team'], obs['left_team_active'],
+              obs['right_team'], obs['right_team_active'])
 
-      rel_pos_right_right = PartyObservationWrapper.create_rel_pose(obs['right_team'], 
-                                                                    obs['right_team_active'], 
-                                                                    obs['right_team'], 
-                                                                    obs['right_team_active'])
+      rel_pos_right_right = PartyObservationWrapper.create_rel_pose(
+              obs['right_team'], obs['right_team_active'],
+              obs['right_team'], obs['right_team_active'])
 
       o.extend(PartyObservationWrapper.do_flatten(rel_pos_left_left))
       o.extend(PartyObservationWrapper.do_flatten(rel_pos_left_right))
-      o.extend(PartyObservationWrapper.do_flatten(rel_pos_right_right)) 
+      o.extend(PartyObservationWrapper.do_flatten(rel_pos_right_right))
 
       sticky = obs['sticky_actions']
       o.extend(sticky)

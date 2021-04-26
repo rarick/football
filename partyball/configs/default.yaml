@@ -10,10 +10,7 @@ dump:
 players:
   - kind: agent
     side: left
-    count: 1
-  - kind: keyboard
-    side: right
-    count: 1
+    count: 11
 
 game:
   actionSet: default
