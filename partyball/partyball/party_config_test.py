@@ -1,4 +1,4 @@
-from party_config import PartyConfig
+from partyball.party_config import PartyConfig
 
 
 def test_default_constructor():

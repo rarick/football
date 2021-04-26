@@ -20,3 +20,7 @@ RUN \
       pip3 install /tmp/gfootball && \
       pip3 install click pyyaml && \
       rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+

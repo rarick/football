@@ -1,8 +1,8 @@
 from gfootball.env.football_env_core import FootballEnvCore
 
-from party_env import PartyEnv
-from party_env_core import PartyEnvCore
-from party_config import PartyConfig
+from partyball.party_env import PartyEnv
+from partyball.party_env_core import PartyEnvCore
+from partyball.party_config import PartyConfig
 
 
 def test_party_env_core():
