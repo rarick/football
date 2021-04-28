@@ -134,11 +134,6 @@ class PartyObservationWrapper(gym.ObservationWrapper):
       if obs['ball_owned_team'] == 1:
         o.extend([0, 0, 1])
 
-      active = [0] * 11
-      if obs['active'] != -1:
-        active[obs['active']] = 1
-      o.extend(active)
-
       game_mode = [0] * 7
       game_mode[obs['game_mode']] = 1
       o.extend(game_mode)
@@ -154,12 +149,6 @@ class PartyObservationWrapper(gym.ObservationWrapper):
 
       right_team_tired_factor = obs['right_team_tired_factor']
       o.extend(right_team_tired_factor)
-
-      if obs['active'] != -1:
-        active_player_pose = np.array(obs['left_team'][obs['active']])
-        ball_pose =np.array(obs['ball'][:-1])
-        rel_position = active_player_pose - ball_pose
-        o.extend(rel_position)
 
       rel_pos_left_left = PartyObservationWrapper.create_rel_pose(obs['left_team'],
                                                                   obs['left_team_active'], 
@@ -180,8 +169,6 @@ class PartyObservationWrapper(gym.ObservationWrapper):
       o.extend(PartyObservationWrapper.do_flatten(rel_pos_left_right))
       o.extend(PartyObservationWrapper.do_flatten(rel_pos_right_right)) 
 
-      sticky = obs['sticky_actions']
-      o.extend(sticky)
 
       final_obs.append(o)
     return np.array(final_obs, dtype=np.float32)
