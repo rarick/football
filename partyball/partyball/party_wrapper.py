@@ -20,25 +20,16 @@ import numpy as np
 
 
 class PartyObservationWrapper(gym.ObservationWrapper):
-  """A wrapper that converts an observation to 115-features state."""
 
   def __init__(self, env, fixed_positions=False):
-    """Initializes the wrapper.
-
-    Args:
-      env: an envorinment to wrap
-      fixed_positions: whether to fix observation indexes corresponding to teams
-    Note: simple115v2 enables fixed_positions option.
-    """
     gym.ObservationWrapper.__init__(self, env)
     action_shape = np.shape(self.env.action_space)
-    shape = (action_shape[0] if len(action_shape) else 1, 115)
+    shape = (action_shape[0] if len(action_shape) else 1, 900)
     self.observation_space = gym.spaces.Box(
         low=-np.inf, high=np.inf, shape=shape, dtype=np.float32)
     self._fixed_positions = fixed_positions
 
   def observation(self, observation):
-    """Converts an observation into simple115 (or simple115v2) format."""
     return PartyObservationWrapper.convert_observation(observation, self._fixed_positions)
 
   @staticmethod
@@ -63,42 +54,6 @@ class PartyObservationWrapper(gym.ObservationWrapper):
 
   @staticmethod
   def convert_observation(observation, fixed_positions):
-    """Converts an observation into simple115 (or simple115v2) format.
-
-    Args:
-      observation: observation that the environment returns
-      fixed_positions: Players and positions are always occupying 88 fields
-                       (even if the game is played 1v1).
-                       If True, the position of the player will be the same - no
-                       matter how many players are on the field:
-                       (so first 11 pairs will belong to the first team, even
-                       if it has less players).
-                       If False, then the position of players from team2
-                       will depend on number of players in team1).
-
-    Returns:
-      (N, 897) shaped representation, where N stands for the number of players
-      being controlled.
-      *   22 - (x,y) coordinates of left team players
-      *   22 - (x,y) direction of left team players
-      *   22 - (x,y) coordinates of right team players
-      *   22 - (x, y) direction of right team players
-      *   3 - (x, y and z) - ball position
-      *   3 - ball direction
-      *   3 - one hot encoding of ball ownership (none, left, right)
-      *   11 - one hot encoding of which player is active
-      *   7 - one hot encoding of `game_mode`
-      *   11 - number of yellow cards for each player of the left team
-      *   11 - number of yellow cards for each player of the right team
-      *   11 - tired factor for each player of the left team
-      *   11 - ntired factor for each player of the right team
-      *   2 - relative pose between active player and ball
-      *   10 - vector 1 or 0 dependung on which action is active
-      *   242 - (x,y) relative position between teamates left
-      *   242 - (x,y) relative position between opponents left
-      *   242 - (x,y) relative position between teamates right
-    """
-
     final_obs = []
     for obs in observation:
       o = []
@@ -181,6 +136,11 @@ class PartyObservationWrapper(gym.ObservationWrapper):
       o.extend(sticky)
 
       final_obs.append(o)
-    return np.array(final_obs, dtype=np.float32)
 
-
+    try:
+      return np.array(final_obs, dtype=np.float32)
+    except Exception as e:
+      for i, o in enumerate(final_obs):
+        print('# {} all not list: {}'.format(i,
+          all([type(a) is not list for a in o])))
+      raise e

@@ -1,3 +1,10 @@
+# Place these:
+# num_envs: number of training environments to run
+# render: whether or not to render
+# dump_frequency: frequency of dumps
+# write_goal_dumps: whether to write goals in dumps
+# write_full_episode_dumps: whether to write full episode dumps
+
 display:
   customStats: null
   gameStats: true
@@ -11,9 +18,12 @@ players:
   - kind: agent
     side: left
     count: 11
+  - kind: bot
+    side: right
+    count: 1
 
 game:
-  actionSet: default
+  actionSet: full
   level: 11_vs_11_stochastic
   physicsStepsPerFrame: 10
   realTime: false
