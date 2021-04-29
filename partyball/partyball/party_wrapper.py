@@ -21,7 +21,7 @@ import numpy as np
 
 class PartyObservationWrapper(gym.ObservationWrapper):
 
-  def __init__(self, env, fixed_positions=False):
+  def __init__(self, env, fixed_positions=True):
     gym.ObservationWrapper.__init__(self, env)
     action_shape = np.shape(self.env.action_space)
     shape = (action_shape[0] if len(action_shape) else 1, 900)
@@ -79,8 +79,10 @@ class PartyObservationWrapper(gym.ObservationWrapper):
 
       # ball position
       o.extend(obs['ball'])
+
       # ball direction
       o.extend(obs['ball_direction'])
+
       # one hot encoding of which team owns the ball
       if obs['ball_owned_team'] == -1:
         o.extend([1, 0, 0])
@@ -115,6 +117,8 @@ class PartyObservationWrapper(gym.ObservationWrapper):
         ball_pose =np.array(obs['ball'][:-1])
         rel_position = active_player_pose - ball_pose
         o.extend(rel_position)
+      else:
+        o.extend(np.zeros(2))
 
       rel_pos_left_left = PartyObservationWrapper.create_rel_pose(
               obs['left_team'], obs['left_team_active'],
@@ -137,10 +141,4 @@ class PartyObservationWrapper(gym.ObservationWrapper):
 
       final_obs.append(o)
 
-    try:
-      return np.array(final_obs, dtype=np.float32)
-    except Exception as e:
-      for i, o in enumerate(final_obs):
-        print('# {} all not list: {}'.format(i,
-          all([type(a) is not list for a in o])))
-      raise e
+    return np.array(final_obs, dtype=np.float32)

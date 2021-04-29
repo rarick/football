@@ -24,12 +24,13 @@ def create_single_party_env(iprocess, config):
       'dump_frequency': 0
     })
 
-  env = PartyObservationWrapper(PartyEnv(config))
+  env = PartyEnv(config)
+  env = PartyObservationWrapper(env)
+  env = wrappers.SingleAgentObservationWrapper(env)
+  env = wrappers.SingleAgentRewardWrapper(env)
   env = monitor.Monitor(env, logger.get_dir() and os.path.join(
     logger.get_dir(), str(iprocess)))
 
-  env = wrappers.SingleAgentObservationWrapper(env)
-  env = wrappers.SingleAgentRewardWrapper(env)
   return env
 
 
@@ -51,7 +52,7 @@ def train(config):
   tf.Session(config=config).__enter__()
 
   ppo2.learn(network='lstm',
-             total_timesteps=int(2e6),
+             total_timesteps=3000*100,
              env=vec_env,
              seed=0,
              nsteps=128,
