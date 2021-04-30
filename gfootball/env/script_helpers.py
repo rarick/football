@@ -92,6 +92,7 @@ class ScriptHelpers(object):
     cfg['dump_full_episodes'] = True
     cfg['write_video'] = True
     cfg['display_game_stats'] = True
+    cfg['custom_display_stats'] = []
     processor = observation_processor.ObservationProcessor(cfg)
     processor.write_dump('episode_done')
     for frame in dump:
@@ -113,6 +114,7 @@ class ScriptHelpers(object):
     if directory:
       config_update['tracesdir'] = directory
     config_update['write_video'] = True
+    cfg['custom_display_stats'] = []
     cfg.update(config_update)
     env = football_env.FootballEnv(cfg)
     if render:
