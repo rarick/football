@@ -55,7 +55,7 @@ def evaluate(config, load_path):
   model = ppo2.learn(network='lstm',
              total_timesteps=0,
              env=vec_env,
-             seed=0,
+             seed=None, #Seeding always give the same results, there's some sampling in the lstm
              nsteps=128,
              nminibatches=1,
              noptepochs=4,
@@ -76,14 +76,14 @@ def evaluate(config, load_path):
   def initialize_placeholders(nlstm=128, **kwargs):
       return np.zeros((1, 2 * 128)), np.zeros((1))
 
-  state, dones = initialize_placeholders()
-
-  done = False
+  state, done = initialize_placeholders()
+  rewards = []
   while not done:
-      actions, values, state, neglogprobs = model.step(obs, S=state, M=dones)
+      actions, values, state, neglogprobs = model.step(obs, S=state, M=done)
       obs, rews, done, infos = env.step(actions)
-
-
+      done = np.array([done], dtype="float32")
+      rewards.append(rews)
+  print(np.sum(rewards))
 
 @click.command()
 @click.argument('config_path', type=click.Path(
