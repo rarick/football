@@ -44,12 +44,12 @@ def train(config):
   ], context=None)
 
   ncpu = multiprocessing.cpu_count()
-  config = tf.ConfigProto(allow_soft_placement=True,
-                          intra_op_parallelism_threads=ncpu,
-                          inter_op_parallelism_threads=ncpu)
+  tf_config = tf.ConfigProto(allow_soft_placement=True,
+                             intra_op_parallelism_threads=ncpu,
+                             inter_op_parallelism_threads=ncpu)
 
   # config.gpu_options.allow_growth = True
-  tf.Session(config=config).__enter__()
+  tf.Session(config=tf_config).__enter__()
 
   ppo2.learn(network='lstm',
              total_timesteps=3000*100,

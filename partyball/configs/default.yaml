@@ -17,7 +17,7 @@ dump:
 players:
   - kind: agent
     side: left
-    count: 11
+    count: 1
   - kind: bot
     side: right
     count: 1
