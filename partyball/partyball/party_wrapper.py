@@ -28,8 +28,10 @@ class PartyObservationWrapper(gym.ObservationWrapper):
     self.observation_space = gym.spaces.Box(
         low=-np.inf, high=np.inf, shape=shape, dtype=np.float32)
     self._fixed_positions = fixed_positions
+    self.score = None
 
   def observation(self, observation):
+    self.score = observation[0]["score"]
     return PartyObservationWrapper.convert_observation(observation, self._fixed_positions)
 
   @staticmethod
